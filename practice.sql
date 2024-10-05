@@ -1653,4 +1653,49 @@ WHERE E1.employee_name = M.employee_name
   -- The rewritten WHERE clause checks that the subquery returns exactly one row by counting the number of distinct titles.
   WHERE (SELECT COUNT(DISTINCT title) FROM course) = 1
 
-  
+
+
+  -- Question 3.23: Consider the query:
+  -- select course_id, semester, year, sec_id, avg (tot_cred)
+  -- from takes natural join student
+  -- where year = 2009
+  -- group by course_id, semester, year, sec_id
+  -- having count (ID) >= 2;
+  -- Explain why joining section as well in the from clause would not change the result.
+
+  -- Explanation:
+  -- The query is using a natural join between the 'takes' and 'student' tables.
+  -- It selects course_id, semester, year, sec_id, and the average of tot_cred for the year 2009.
+  -- The results are grouped by course_id, semester, year, and sec_id, with a condition that the count of IDs is at least 2.
+  -- Adding a join with the 'section' table would not change the result because the query does not use any columns from the 'section' table.
+  -- The grouping and conditions are based solely on the 'takes' and 'student' tables.
+
+  -- Question 3.24: Rewrite the query without using the with construct.
+  -- Original Query:
+  -- with dept_total (dept_name, value) as
+  -- (select dept_name, sum(salary)
+  -- from instructor
+  -- group by dept_name),
+  -- dept_total_avg(value) as
+  -- (select avg(value)
+  -- from dept_total)
+  -- select dept_name
+  -- from dept_total, dept_total_avg
+  -- where dept_total.value >= dept_total_avg.value;
+
+  -- Rewritten Query:
+  -- This query selects department names where the total salary is greater than or equal to the average total salary across all departments.
+  SELECT dept_name
+  FROM (
+      SELECT dept_name, SUM(salary) AS total_salary
+      FROM instructor
+      GROUP BY dept_name
+  ) AS dept_total
+  WHERE total_salary >= (
+      SELECT AVG(total_salary)
+      FROM (
+          SELECT SUM(salary) AS total_salary
+          FROM instructor
+          GROUP BY dept_name
+      ) AS dept_total_avg
+  );
