@@ -1612,3 +1612,45 @@ WHERE E1.employee_name = M.employee_name
       manager_name VARCHAR(50),
       FOREIGN KEY (employee_name) REFERENCES employee(employee_name)
   );
+
+
+
+
+  -- Schema Definition
+  -- This statement creates a table named 'member' with three columns: memb_no, name, and age.
+  -- The primary key is memb_no.
+  CREATE TABLE member (
+      memb_no INT PRIMARY KEY,
+      name VARCHAR(100),
+      age INT
+  );
+
+  -- This statement creates a table named 'book' with four columns: isbn, title, authors, and publisher.
+  -- The primary key is isbn.
+  CREATE TABLE book (
+      isbn VARCHAR(20) PRIMARY KEY,
+      title VARCHAR(200),
+      authors VARCHAR(200),
+      publisher VARCHAR(100)
+  );
+
+  -- This statement creates a table named 'borrowed' with three columns: memb_no, isbn, and date.
+  -- The primary key is a combination of memb_no and isbn.
+  -- The memb_no is a foreign key referencing the member table.
+  -- The isbn is a foreign key referencing the book table.
+  CREATE TABLE borrowed (
+      memb_no INT,
+      isbn VARCHAR(20),
+      date DATE,
+      PRIMARY KEY (memb_no, isbn),
+      FOREIGN KEY (memb_no) REFERENCES member(memb_no),
+      FOREIGN KEY (isbn) REFERENCES book(isbn)
+  );
+
+  -- Rewriting the WHERE clause without using the UNIQUE construct
+  -- The UNIQUE construct ensures that the subquery returns a single row.
+  -- We can achieve the same result by using a GROUP BY clause and a HAVING clause to ensure uniqueness.
+  -- The rewritten WHERE clause checks that the subquery returns exactly one row by counting the number of distinct titles.
+  WHERE (SELECT COUNT(DISTINCT title) FROM course) = 1
+
+  
