@@ -1,4 +1,5 @@
 -- Create a Table
+
 -- This statement creates a table named 'employees' with five columns: employee_id, first_name, last_name, email, and hire_date.
 CREATE TABLE employees (
     employee_id INT,
@@ -1327,3 +1328,287 @@ END;
 
 
 
+-- Example Schema:
+-- The 'instructor' table has columns: ID, name, dept_name, and salary.
+-- The 'course' table has columns: course_id, title, dept_name, and credits.
+-- The 'section' table has columns: course_id, sec_id, semester, year, and building.
+-- The 'student' table has columns: ID, name, dept_name, and tot_cred.
+
+-- Question: Write the following inserts, deletes or updates in SQL, using the university schema.
+-- a. Increase the salary of each instructor in the Comp. Sci. department by 10%.
+-- b. Delete all courses that have never been offered (that is, do not occur in the section relation).
+-- c. Insert every student whose tot_cred attribute is greater than 100 as an instructor in the same department, with a salary of $10,000.
+
+-- Answer:
+-- a. Increase the salary of each instructor in the Comp. Sci. department by 10%.
+-- This query updates the 'salary' attribute of all instructors in the 'Comp. Sci.' department by increasing it by 10%.
+UPDATE instructor
+SET salary = salary * 1.10
+WHERE dept_name = 'Comp. Sci.';
+
+-- b. Delete all courses that have never been offered (that is, do not occur in the section relation).
+-- This query deletes all courses from the 'course' table that do not have a corresponding entry in the 'section' table.
+DELETE FROM course
+WHERE course_id NOT IN (SELECT DISTINCT course_id FROM section);
+
+-- c. Insert every student whose tot_cred attribute is greater than 100 as an instructor in the same department, with a salary of $10,000.
+-- This query inserts students with more than 100 total credits into the 'instructor' table with a salary of $10,000.
+INSERT INTO instructor (ID, name, dept_name, salary)
+SELECT ID, name, dept_name, 10000
+FROM student
+WHERE tot_cred > 100;
+
+-- Example Data:
+-- Suppose we have the following data in the 'instructor' table:
+-- | ID | name       | dept_name  | salary |
+-- |----|------------|------------|--------|
+-- | 1  | John Smith | Comp. Sci. | 90000  |
+-- | 2  | Jane Doe   | Biology    | 80000  |
+-- 
+-- And the following data in the 'course' table:
+-- | course_id | title         | dept_name  | credits |
+-- |-----------|---------------|------------|---------|
+-- | CS101     | Intro to CS   | Comp. Sci. | 4       |
+-- | BIO101    | Intro to Bio  | Biology    | 4       |
+-- | MATH101   | Calculus I    | Math       | 4       |
+-- 
+-- And the following data in the 'section' table:
+-- | course_id | sec_id | semester | year | building |
+-- |-----------|--------|----------|------|----------|
+-- | CS101     | 1      | Fall     | 2022 | Watson   |
+-- 
+-- And the following data in the 'student' table:
+-- | ID | name       | dept_name  | tot_cred |
+-- |----|------------|------------|----------|
+-- | 1  | Alice Brown| Comp. Sci. | 120      |
+-- | 2  | Bob White  | Biology    | 90       |
+-- 
+-- The result of the queries will be:
+-- For query a:
+-- | ID | name       | dept_name  | salary |
+-- |----|------------|------------|--------|
+-- | 1  | John Smith | Comp. Sci. | 99000  |
+-- | 2  | Jane Doe   | Biology    | 80000  |
+-- 
+-- For query b:
+-- | course_id | title         | dept_name  | credits |
+-- |-----------|---------------|------------|---------|
+-- | CS101     | Intro to CS   | Comp. Sci. | 4       |
+-- 
+-- For query c:
+-- | ID | name       | dept_name  | salary |
+-- |----|------------|------------|--------|
+-- | 1  | John Smith | Comp. Sci. | 99000  |
+-- | 2  | Jane Doe   | Biology    | 80000  |
+-- | 1  | Alice Brown| Comp. Sci. | 10000  |
+
+
+
+
+-- Schema Definition
+-- person (driver_id PK, name, address)
+-- car (license PK, model, year)
+-- accident (report_number PK, date, location)
+-- owns (driver_id PK, license PK)
+-- participated (report_number PK, license PK, driver_id, damage_amount)
+
+-- a. Find the number of accidents in which the cars belonging to “John Smith” were involved.
+SELECT COUNT(DISTINCT A.report_number) AS num_accidents
+FROM person P
+JOIN owns O ON P.driver_id = O.driver_id
+JOIN participated PA ON O.license = PA.license
+JOIN accident A ON PA.report_number = A.report_number
+WHERE P.name = 'John Smith';
+
+-- Explanation:
+-- This query counts the distinct number of accident report numbers.
+-- It joins the 'person', 'owns', 'participated', and 'accident' tables.
+-- The WHERE clause filters the results to include only those accidents involving cars owned by "John Smith".
+
+-- Example:
+-- Suppose we have the following data:
+-- person: | driver_id | name       | address     |
+--         |-----------|------------|-------------|
+--         | 1         | John Smith | 123 Elm St  |
+-- owns:   | driver_id | license    |
+--         |-----------|------------|
+--         | 1         | ABC123     |
+-- participated: | report_number | license | driver_id | damage_amount |
+--               |---------------|---------|-----------|---------------|
+--               | AR1001        | ABC123  | 1         | 500           |
+-- accident: | report_number | date       | location  |
+--           |---------------|------------|-----------|
+--           | AR1001        | 2023-01-01 | Downtown  |
+-- The result will be:
+-- | num_accidents |
+-- |---------------|
+-- | 1             |
+
+-- b. Update the damage amount for the car with the license number “AABB2000” in the accident with report number “AR2197” to $3000.
+UPDATE participated
+SET damage_amount = 3000
+WHERE license = 'AABB2000' AND report_number = 'AR2197';
+
+-- Explanation:
+-- This query updates the 'participated' table.
+-- It sets the damage_amount to 3000 for the specified license and report number.
+
+-- Example:
+-- Suppose we have the following data before the update:
+-- participated: | report_number | license  | driver_id | damage_amount |
+--               |---------------|----------|-----------|---------------|
+--               | AR2197        | AABB2000 | 2         | 1500          |
+-- After the update, the data will be:
+-- participated: | report_number | license  | driver_id | damage_amount |
+--               |---------------|----------|-----------|---------------|
+--               | AR2197        | AABB2000 | 2         | 3000          |
+
+
+
+
+
+-- Schema Definition:
+-- branch(branch_name PK, branch_city, assets)
+-- customer(customer_name PK, customer_street, customer_city)
+-- loan(loan_number PK, branch_name, amount)
+-- borrower(customer_name, loan_number PK)
+-- account(account_number PK, branch_name, balance)
+-- depositor(customer_name, account_number PK)
+
+-- a. Find all customers who have an account at all the branches located in "Brooklyn".
+-- This query selects customer names from the 'customer' table.
+-- It uses a nested subquery with NOT EXISTS to ensure the customer has an account at all branches in Brooklyn.
+SELECT DISTINCT C.customer_name
+FROM customer C
+WHERE NOT EXISTS (
+    SELECT B.branch_name
+    FROM branch B
+    WHERE B.branch_city = 'Brooklyn'
+    EXCEPT
+    SELECT D.branch_name
+    FROM depositor D, account A
+    WHERE D.account_number = A.account_number AND D.customer_name = C.customer_name AND A.branch_name = B.branch_name
+);
+
+-- b. Find out the total sum of all loan amounts in the bank.
+-- This query calculates the total sum of all loan amounts from the 'loan' table.
+SELECT SUM(amount) AS total_loan_amount
+FROM loan;
+
+-- c. Find the names of all branches that have assets greater than those of at least one branch located in "Brooklyn".
+-- This query selects branch names from the 'branch' table.
+-- It uses a subquery to compare assets with branches located in Brooklyn.
+SELECT B1.branch_name
+FROM branch B1
+WHERE B1.assets > ANY (
+    SELECT B2.assets
+    FROM branch B2
+    WHERE B2.branch_city = 'Brooklyn'
+);
+
+
+
+
+
+-- Schema Definition:
+-- employee(employee_name PK, street, city)
+-- works(employee_name PK, company_name, salary)
+-- company(company_name PK, city)
+-- manages(employee_name PK, manager_name)
+
+-- a. Modify the database so that “Jones” now lives in “Newtown”.
+-- This query updates the 'employee' table to set the city to 'Newtown' where the employee_name is 'Jones'.
+UPDATE employee
+SET city = 'Newtown'
+WHERE employee_name = 'Jones';
+
+-- b. Give all managers of “First Bank Corporation” a 10 percent raise
+-- unless the salary becomes greater than $100,000; in such cases, give
+-- only a 3 percent raise.
+-- This query updates the 'works' table to give a 10 percent raise to managers of 'First Bank Corporation' 
+-- whose salary after the raise does not exceed $100,000.
+UPDATE works
+SET salary = salary * 1.10
+WHERE employee_name IN (SELECT employee_name
+                        FROM manages)
+  AND company_name = 'First Bank Corporation'
+  AND salary * 1.10 <= 100000;
+
+-- This query updates the 'works' table to give a 3 percent raise to managers of 'First Bank Corporation' 
+-- whose salary after a 10 percent raise would exceed $100,000.
+UPDATE works
+SET salary = salary * 1.03
+WHERE employee_name IN (SELECT employee_name
+                        FROM manages)
+  AND company_name = 'First Bank Corporation'
+  AND salary * 1.10 > 100000;
+
+-- Schema Definition:
+-- employee(employee_name PK, street, city)
+-- works(employee_name PK, company_name, salary)
+-- company(company_name PK, city)
+-- manages(employee_name PK, manager_name)
+
+-- a. Find the names of all employees who work for “First Bank Corporation”.
+-- This query selects the names of employees from the 'works' table where the company_name is 'First Bank Corporation'.
+-- The WHERE clause filters the rows to include only those where the company_name is 'First Bank Corporation'.
+SELECT employee_name
+FROM works
+WHERE company_name = 'First Bank Corporation';
+
+-- b. Find all employees in the database who live in the same cities as the companies for which they work.
+-- This query selects the names of employees from the 'employee', 'works', and 'company' tables where the employee's city matches the company's city.
+-- The WHERE clause ensures that the employee's city is the same as the company's city.
+-- The query joins the 'employee' and 'works' tables on the employee_name, and the 'works' and 'company' tables on the company_name.
+SELECT E.employee_name
+FROM employee E, works W, company C
+WHERE E.employee_name = W.employee_name
+  AND W.company_name = C.company_name
+  AND E.city = C.city;
+
+-- c. Find all employees in the database who live in the same cities and on the same streets as do their managers.
+-- This query selects the names of employees from the 'employee' and 'manages' tables where the employee's city and street match the manager's city and street.
+-- The WHERE clause ensures that the employee's city and street are the same as the manager's city and street.
+-- The query joins the 'employee' table twice: once for the employee and once for the manager.
+SELECT E1.employee_name
+FROM employee E1, employee E2, manages M
+WHERE E1.employee_name = M.employee_name
+  AND M.manager_name = E2.employee_name
+  AND E1.city = E2.city
+  AND E1.street = E2.street;
+
+  -- Schema Definition for the employee database of Figure 3.20
+
+  -- This statement creates a table named 'employee' with three columns: employee_name, street, and city.
+  -- The primary key is employee_name.
+  CREATE TABLE employee (
+      employee_name VARCHAR(50) PRIMARY KEY,
+      street VARCHAR(50),
+      city VARCHAR(50)
+  );
+
+  -- This statement creates a table named 'works' with three columns: employee_name, company_name, and salary.
+  -- The primary key is employee_name.
+  -- The employee_name is a foreign key referencing the employee table.
+  CREATE TABLE works (
+      employee_name VARCHAR(50) PRIMARY KEY,
+      company_name VARCHAR(50),
+      salary DECIMAL(10, 2),
+      FOREIGN KEY (employee_name) REFERENCES employee(employee_name)
+  );
+
+  -- This statement creates a table named 'company' with two columns: company_name and city.
+  -- The primary key is company_name.
+  CREATE TABLE company (
+      company_name VARCHAR(50) PRIMARY KEY,
+      city VARCHAR(50)
+  );
+
+  -- This statement creates a table named 'manages' with two columns: employee_name and manager_name.
+  -- The primary key is employee_name.
+  -- The employee_name is a foreign key referencing the employee table.
+  CREATE TABLE manages (
+      employee_name VARCHAR(50) PRIMARY KEY,
+      manager_name VARCHAR(50),
+      FOREIGN KEY (employee_name) REFERENCES employee(employee_name)
+  );
