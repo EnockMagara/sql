@@ -1117,4 +1117,213 @@ FROM department;
 -- | Physics    | 4               |
 
 
+-- Exercise 30: Delete Instructors from Finance Department
+-- Question: Write a query to delete all instructors from the Finance department.
+-- Answer:
+-- This query deletes all tuples in the 'instructor' table where the department name is 'Finance'.
+DELETE FROM instructor
+WHERE dept_name = 'Finance';
+
+-- Example:
+-- Suppose we have the following data in the 'instructor' table:
+-- | ID | name       | dept_name |
+-- |----|------------|-----------|
+-- | 1  | John Smith | Finance   |
+-- | 2  | Jane Doe   | Finance   |
+-- | 3  | Alice Brown| Biology   |
+-- 
+-- The result of the query will be:
+-- | ID | name       | dept_name |
+-- |----|------------|-----------|
+-- | 3  | Alice Brown| Biology   |
+
+
+-- Exercise 31: Delete Instructors with Salary Between 13000 and 15000
+-- Question: Write a query to delete all instructors with a salary between $13,000 and $15,000.
+-- Answer:
+-- This query deletes all tuples in the 'instructor' table where the salary is between 13000 and 15000.
+DELETE FROM instructor
+WHERE salary BETWEEN 13000 AND 15000;
+
+-- Example:
+-- Suppose we have the following data in the 'instructor' table:
+-- | ID | name       | salary |
+-- |----|------------|--------|
+-- | 1  | John Smith | 14000  |
+-- | 2  | Jane Doe   | 16000  |
+-- | 3  | Alice Brown| 15000  |
+-- 
+-- The result of the query will be:
+-- | ID | name       | salary |
+-- |----|------------|--------|
+-- | 2  | Jane Doe   | 16000  |
+
+
+-- Exercise 32: Delete Instructors in Watson Building
+-- Question: Write a query to delete all instructors associated with a department located in the Watson building.
+-- Answer:
+-- This query deletes all tuples in the 'instructor' table where the department name is in the set of department names located in the Watson building.
+DELETE FROM instructor
+WHERE dept_name IN (SELECT dept_name
+                    FROM department
+                    WHERE building = 'Watson');
+
+-- Example:
+-- Suppose we have the following data in the 'department' table:
+-- | dept_name | building     |
+-- |-----------|--------------|
+-- | Comp. Sci.| Watson Hall  |
+-- | Biology   | Watson Annex |
+-- 
+-- And the following data in the 'instructor' table:
+-- | ID | name       | dept_name  |
+-- |----|------------|------------|
+-- | 1  | John Smith | Comp. Sci. |
+-- | 2  | Jane Doe   | Biology    |
+-- | 3  | Alice Brown| Chemistry  |
+-- 
+-- The result of the query will be:
+-- | ID | name       | dept_name  |
+-- |----|------------|------------|
+-- | 3  | Alice Brown| Chemistry  |
+
+
+-- Exercise 33: Delete Instructors with Salary Below Average
+-- Question: Write a query to delete the records of all instructors with salary below the average at the university.
+-- Answer:
+-- This query deletes all tuples in the 'instructor' table where the salary is less than the average salary of all instructors.
+DELETE FROM instructor
+WHERE salary < (SELECT AVG(salary)
+                FROM instructor);
+
+-- Example:
+-- Suppose we have the following data in the 'instructor' table:
+-- | ID | name       | salary |
+-- |----|------------|--------|
+-- | 1  | John Smith | 90000  |
+-- | 2  | Jane Doe   | 80000  |
+-- | 3  | Alice Brown| 70000  |
+-- 
+-- The average salary is (90000 + 80000 + 70000) / 3 = 80000.
+-- The result of the query will be:
+-- | ID | name       | salary |
+-- |----|------------|--------|
+-- | 1  | John Smith | 90000  |
+-- | 2  | Jane Doe   | 80000  |
+
+
+-- Exercise 34: Insert New Course
+-- Question: Write a query to insert a new course 'CS-437' in the Computer Science department with title 'Database Systems' and 4 credit hours.
+-- Answer:
+-- This query inserts a new tuple into the 'course' table with the specified values.
+INSERT INTO course (course_id, title, dept_name, credits)
+VALUES ('CS-437', 'Database Systems', 'Comp. Sci.', 4);
+
+-- Example:
+-- Suppose we have the following data in the 'course' table:
+-- | course_id | title            | dept_name  | credits |
+-- |-----------|------------------|------------|---------|
+-- | CS101     | Intro to CS      | Comp. Sci. | 3       |
+-- 
+-- The result of the query will be:
+-- | course_id | title            | dept_name  | credits |
+-- |-----------|------------------|------------|---------|
+-- | CS101     | Intro to CS      | Comp. Sci. | 3       |
+-- | CS-437    | Database Systems | Comp. Sci. | 4       |
+
+
+-- Exercise 35: Insert Students as Instructors
+-- Question: Write a query to make each student in the Music department who has earned more than 144 credit hours an instructor in the Music department with a salary of $18,000.
+-- Answer:
+-- This query inserts tuples into the 'instructor' table based on the result of a select query from the 'student' table.
+INSERT INTO instructor (ID, name, dept_name, salary)
+SELECT ID, name, dept_name, 18000
+FROM student
+WHERE dept_name = 'Music' AND tot_cred > 144;
+
+-- Example:
+-- Suppose we have the following data in the 'student' table:
+-- | ID | name       | dept_name | tot_cred |
+-- |----|------------|-----------|----------|
+-- | 1  | John Smith | Music     | 150      |
+-- | 2  | Jane Doe   | Music     | 140      |
+-- 
+-- The result of the query will be:
+-- | ID | name       | dept_name | salary |
+-- |----|------------|-----------|--------|
+-- | 1  | John Smith | Music     | 18000  |
+
+
+-- Exercise 36: Update Instructor Salaries by 5%
+-- Question: Write a query to increase the salaries of all instructors by 5 percent.
+-- Answer:
+-- This query updates the 'salary' attribute of all tuples in the 'instructor' table by multiplying the current salary by 1.05.
+UPDATE instructor
+SET salary = salary * 1.05;
+
+-- Example:
+-- Suppose we have the following data in the 'instructor' table:
+-- | ID | name       | salary |
+-- |----|------------|--------|
+-- | 1  | John Smith | 90000  |
+-- | 2  | Jane Doe   | 80000  |
+-- 
+-- The result of the query will be:
+-- | ID | name       | salary |
+-- |----|------------|--------|
+-- | 1  | John Smith | 94500  |
+-- | 2  | Jane Doe   | 84000  |
+
+
+-- Exercise 37: Update Instructor Salaries Based on Condition
+-- Question: Write a query to give a 5 percent salary raise to instructors whose salary is less than the average salary.
+-- Answer:
+-- This query updates the 'salary' attribute of all tuples in the 'instructor' table where the salary is less than the average salary of all instructors.
+UPDATE instructor
+SET salary = salary * 1.05
+WHERE salary < (SELECT AVG(salary)
+                FROM instructor);
+
+-- Example:
+-- Suppose we have the following data in the 'instructor' table:
+-- | ID | name       | salary |
+-- |----|------------|--------|
+-- | 1  | John Smith | 90000  |
+-- | 2  | Jane Doe   | 80000  |
+-- | 3  | Alice Brown| 70000  |
+-- 
+-- The average salary is (90000 + 80000 + 70000) / 3 = 80000.
+-- The result of the query will be:
+-- | ID | name       | salary |
+-- |----|------------|--------|
+-- | 1  | John Smith | 90000  |
+-- | 2  | Jane Doe   | 80000  |
+-- | 3  | Alice Brown| 73500  |
+
+
+-- Exercise 38: Update Instructor Salaries with CASE
+-- Question: Write a query to give a 3 percent raise to instructors with salary over $100,000 and a 5 percent raise to all others using CASE.
+-- Answer:
+-- This query updates the 'salary' attribute of all tuples in the 'instructor' table using a CASE statement to apply different raises based on the current salary.
+UPDATE instructor
+SET salary = CASE
+    WHEN salary > 100000 THEN salary * 1.03
+    ELSE salary * 1.05
+END;
+
+-- Example:
+-- Suppose we have the following data in the 'instructor' table:
+-- | ID | name       | salary  |
+-- |----|------------|---------|
+-- | 1  | John Smith | 110000  |
+-- | 2  | Jane Doe   | 90000   |
+-- 
+-- The result of the query will be:
+-- | ID | name       | salary  |
+-- |----|------------|---------|
+-- | 1  | John Smith | 113300  |
+-- | 2  | Jane Doe   | 94500   |
+
+
+
 
