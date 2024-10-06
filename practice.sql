@@ -1699,3 +1699,6 @@ WHERE E1.employee_name = M.employee_name
           GROUP BY dept_name
       ) AS dept_total_avg
   );
+
+
+  
