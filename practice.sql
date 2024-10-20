@@ -1702,3 +1702,14 @@ WHERE E1.employee_name = M.employee_name
 
 
   
+
+  --Midterm review
+
+SELECT V.vi_id
+FROM Voter V
+JOIN VotesCast VC ON V.v_id = VC.v_id
+JOIN Office O ON VC.o_id = 
+WHERE    
+
+  
+   
