@@ -123,6 +123,7 @@ SELECT DISTINCT T.name
 FROM instructor AS T, instructor AS S
 WHERE T.salary > S.salary AND S.dept_name = 'Biology';
 
+
 -- Example:
 -- Suppose we have the following data in the 'instructor' table:
 -- | ID | name       | salary | dept_name |
