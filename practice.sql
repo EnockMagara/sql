@@ -1012,6 +1012,91 @@ WHERE NOT EXISTS ((SELECT course_id
 -- | 1  | Student1   |
 
 
+--Exercise: find all students who have taken all courses offered in the Biology department.
+-- Explanation of the query using example tables:
+-- This query finds all students who have taken all courses offered in the Biology department.
+-- It uses JOIN and GROUP BY to achieve this.
+
+-- Example:
+-- Suppose we have the following data in the 'student' table:
+-- | ID | name       |
+-- |----|------------|
+-- | 1  | John Smith |
+-- | 2  | Jane Doe   |
+-- 
+-- And the following data in the 'takes' table:
+-- | ID | course_id |
+-- |----|-----------|
+-- | 1  | BIO101    |
+-- | 1  | BIO102    |
+-- | 2  | BIO101    |
+-- 
+-- And the following data in the 'course' table:
+-- | course_id | dept_name |
+-- |-----------|-----------|
+-- | BIO101    | Biology   |
+-- | BIO102    | Biology   |
+-- | CS101     | Comp. Sci.|
+-- 
+-- The subquery will count the number of courses in the Biology department: 2.
+-- The main query will join the 'student', 'takes', and 'course' tables on the appropriate keys.
+-- It will group the results by student ID and name, and count the distinct Biology courses each student has taken.
+-- The HAVING clause ensures that only students who have taken all Biology courses are included in the result.
+-- Therefore, the result of the query will be:
+-- | ID | name       |
+-- |----|------------|
+-- | 1  | John Smith |
+SELECT S.ID, S.name
+FROM student AS S
+JOIN takes AS T ON S.ID = T.ID
+JOIN course AS C ON T.course_id = C.course_id
+WHERE C.dept_name = 'Biology'
+GROUP BY S.ID, S.name
+HAVING COUNT(DISTINCT C.course_id) = (SELECT COUNT(*)
+                                      FROM course
+                                      WHERE dept_name = 'Biology');
+
+
+
+
+-- Exercise 29: Using EXISTS in a Subquery
+-- Question: Write a query to find all students who have taken at least one course in the 'Physics' department.
+-- Answer:
+-- This query selects student IDs and names from the 'student' table.
+-- It uses a subquery with EXISTS to check if the student has taken at least one course in the 'Physics' department.
+SELECT S.ID, S.name
+FROM student AS S
+WHERE EXISTS (SELECT 1
+              FROM takes AS T
+              JOIN course AS C ON T.course_id = C.course_id
+              WHERE S.ID = T.ID AND C.dept_name = 'Physics');
+
+-- Example:
+-- Suppose we have the following data in the 'student' table:
+-- | ID | name       |
+-- |----|------------|
+-- | 1  | John Smith |
+-- | 2  | Jane Doe   |
+-- 
+-- And the following data in the 'takes' table:
+-- | ID | course_id |
+-- |----|-----------|
+-- | 1  | PH101     |
+-- | 2  | BIO101    |
+-- 
+-- And the following data in the 'course' table:
+-- | course_id | dept_name |
+-- |-----------|-----------|
+-- | PH101     | Physics   |
+-- | BIO101    | Biology   |
+-- 
+-- The subquery will check if each student has taken at least one course in the 'Physics' department.
+-- The outer query will then select the student IDs and names that satisfy this condition.
+-- Therefore, the result of the query will be:
+-- | ID | name       |
+-- |----|------------|
+-- | 1  | John Smith |
+
 -- Exercise 27: Test for Absence of Duplicate Tuples with UNIQUE
 -- Question: Write a query to find all courses that were offered at most once in 2009.
 -- Answer:
@@ -1714,3 +1799,506 @@ WHERE
 
   
    
+-- Explanation of Erroneous Query with Example Table
+
+-- The following query is erroneous because the attribute 'ID' appears in the SELECT clause without being aggregated and is not present in the GROUP BY clause.
+-- This violates the SQL rule that any attribute not present in the GROUP BY clause must appear only inside an aggregate function if it appears in the SELECT clause.
+
+-- Erroneous Query:
+-- select dept_name, ID, avg(salary)
+-- from instructor
+-- group by dept_name;
+
+-- Example Table: instructor
+-- | ID | name       | dept_name  | salary |
+-- |----|------------|------------|--------|
+-- | 1  | John Smith | Comp. Sci. | 75000  |
+-- | 2  | Jane Doe   | Comp. Sci. | 65000  |
+-- | 3  | Alice Brown| Biology    | 72000  |
+-- | 4  | Bob White  | Biology    | 72000  |
+-- | 5  | Carol Black| Physics    | 91000  |
+
+-- Correct Query:
+-- To correct the query, we need to remove the 'ID' attribute from the SELECT clause or include it in an aggregate function.
+-- Here is the corrected query that finds the average salary in each department without including 'ID' in the SELECT clause.
+
+SELECT dept_name, AVG(salary) AS avg_salary
+FROM instructor
+GROUP BY dept_name;
+
+-- Result of the Correct Query:
+-- | dept_name  | avg_salary |
+-- |------------|------------|
+-- | Comp. Sci. | 70000      |
+-- | Biology    | 72000      |
+-- | Physics    | 91000      |
+
+-- The corrected query groups the tuples by 'dept_name' and calculates the average salary for each group.
+-- The 'ID' attribute is not included in the SELECT clause, ensuring the query is valid.
+
+
+-- Explanation of Weak Entities with Example Table
+
+-- A weak entity is an entity that cannot be uniquely identified by its own attributes alone.
+-- It relies on a "strong" or "owner" entity to provide additional attributes for unique identification.
+-- Weak entities have a partial key, which is an attribute that can uniquely identify weak entities, but only when combined with the key of the strong entity.
+-- Weak entities are represented in ER diagrams with a double rectangle, and their relationship with the strong entity is represented with a double diamond.
+
+-- Example:
+-- Consider the following example tables for a university database:
+
+-- department table (strong entity):
+-- | dept_name  | building | budget |
+-- |------------|----------|--------|
+-- | Comp. Sci. | Taylor   | 100000 |
+-- | Biology    | Watson   | 150000 |
+
+-- course table (weak entity):
+-- | course_id | dept_name  | course_name |
+-- |-----------|------------|-------------|
+-- | 101       | Comp. Sci. | Data Structures |
+-- | 102       | Comp. Sci. | Algorithms |
+-- | 201       | Biology    | Genetics |
+-- | 202       | Biology    | Microbiology |
+
+-- In this example:
+-- 1. The 'department' table is the strong entity with 'dept_name' as its primary key.
+-- 2. The 'course' table is the weak entity that cannot be uniquely identified by 'course_id' alone.
+-- 3. The combination of 'course_id' and 'dept_name' uniquely identifies each course.
+-- 4. The 'dept_name' attribute in the 'course' table is a foreign key that references the 'department' table.
+
+-- The relationship between 'department' and 'course' is a one-to-many relationship, where each department can offer multiple courses.
+-- The 'course' table depends on the 'department' table for its unique identification.
+
+-- To create these tables in SQL, we can use the following statements:
+
+-- Create the 'department' table (strong entity)
+CREATE TABLE department (
+    dept_name VARCHAR(50) PRIMARY KEY,
+    building VARCHAR(50),
+    budget INT
+);
+
+-- Create the 'course' table (weak entity)
+CREATE TABLE course (
+    course_id INT,
+    dept_name VARCHAR(50),
+    course_name VARCHAR(50),
+    PRIMARY KEY (course_id, dept_name),
+    FOREIGN KEY (dept_name) REFERENCES department(dept_name)
+);
+
+-- The 'course' table has a composite primary key consisting of 'course_id' and 'dept_name'.
+-- The 'dept_name' attribute in the 'course' table is a foreign key that references the 'department' table.
+-- This ensures that each course is associated with a valid department and can be uniquely identified by the combination of 'course_id' and 'dept_name'.
+
+
+
+
+-- Create the 'course' table (strong entity)
+CREATE TABLE course (
+    course_id INT PRIMARY KEY,  -- Primary key for the course table
+    title VARCHAR(100),         -- Title of the course
+    credits INT                 -- Number of credits for the course
+);
+
+-- Create the 'section' table (weak entity)
+CREATE TABLE section (
+    sec_id INT,                 -- Section ID
+    course_id INT,              -- Foreign key referencing course_id in the course table
+    semester VARCHAR(20),       -- Semester in which the section is offered
+    year INT,                   -- Year in which the section is offered
+    PRIMARY KEY (sec_id, course_id, semester, year),  -- Composite primary key
+    FOREIGN KEY (course_id) REFERENCES course(course_id)  -- Foreign key constraint
+);
+
+-- The 'section' table has a composite primary key consisting of 'sec_id', 'course_id', 'semester', and 'year'.
+-- The 'course_id' attribute in the 'section' table is a foreign key that references the 'course' table.
+-- This ensures that each section is associated with a valid course and can be uniquely identified by the combination of 'sec_id', 'course_id', 'semester', and 'year'.
+
+
+
+
+-- Explanation of Composite and Multivalued Attributes
+
+-- Composite Attributes:
+-- Composite attributes are attributes that can be divided into smaller subparts, which represent more basic attributes with independent meanings.
+-- In the given example, the 'name' attribute is a composite attribute consisting of 'first_name', 'middle_initial', and 'last_name'.
+-- These subparts can be stored as separate attributes in the database schema.
+
+-- Example:
+-- Consider an entity set 'instructor' with a composite attribute 'name'.
+-- The schema for this entity set can include separate attributes for each component of the composite attribute:
+-- instructor(ID, first_name, middle_initial, last_name, ...)
+
+-- Multivalued Attributes:
+-- Multivalued attributes are attributes that can have multiple values for a single entity.
+-- In the example, 'phone_number' is a multivalued attribute, meaning an instructor can have more than one phone number.
+-- Multivalued attributes are typically represented by creating a separate table to store the multiple values.
+
+-- Example:
+-- To handle the multivalued attribute 'phone_number', we can create a separate table:
+-- phone_numbers(instructor_ID, phone_number)
+-- Here, 'instructor_ID' is a foreign key referencing the 'instructor' table, and 'phone_number' stores each phone number.
+
+-- Ignoring multivalued attributes, the extended schema for the 'instructor' entity is:
+-- instructor(ID, first_name, middle_initial, last_name, street_number, street_name, apt_number, city, state, zip_code, date_of_birth)
+
+-- This schema includes separate attributes for each component of the composite attributes and omits the multivalued attribute.
+
+
+
+
+
+
+
+
+
+
+-- Schema for the Library Database
+-- book(book_id, title, author, genre, published_year)
+-- member(member_id, first_name, last_name, membership_date)
+-- loan(loan_id, book_id, member_id, loan_date, return_date)
+-- reservation(reservation_id, book_id, member_id, reservation_date)
+
+-- Example Questions:
+
+-- 1. Find the titles and authors of all books published after the year 2000.
+-- SQL Query:
+-- SELECT title, author
+-- FROM book
+-- WHERE published_year > 2000;
+
+-- 2. List the names of all members who have reserved a book but have not yet borrowed any book.
+-- SQL Query:
+-- SELECT first_name, last_name
+-- FROM member
+-- WHERE member_id IN (SELECT member_id FROM reservation)
+-- AND member_id NOT IN (SELECT member_id FROM loan);
+
+-- 3. Find the number of books each member has borrowed.
+-- SQL Query:
+-- SELECT member_id, COUNT(DISTINCT book_id) AS number_of_books
+-- FROM loan
+-- GROUP BY member_id;
+
+-- Explanation:
+-- 1. The COUNT(DISTINCT book_id) function counts the number of unique book_ids for each member.
+-- 2. This ensures that if a member has borrowed the same book multiple times, it is only counted once.
+-- 3. The GROUP BY clause groups the results by member_id, so we get the count of unique books for each member.
+
+
+
+-- Customer(customer_id, name, city)
+-- Product(product_id, name, category)
+-- Purchase(customer_id, product_id, purchase_date)
+    -- Foreign Key (customer_id) references Customer(customer_id)
+    -- Foreign Key (product_id) references Product(product_id)
+
+-- Example Questions:
+
+-- 1. Find the customer_ids of customers who live in 'New York' and purchased products in the 'Electronics' category.
+-- SQL Query:
+-- SELECT customer_id
+-- FROM Customer
+-- NATURAL JOIN Purchase
+-- NATURAL JOIN Product
+-- WHERE city = 'New York' AND category = 'Electronics';
+
+-- 2. Find the name and number of purchases for each product in the 'Books' category.
+-- SQL Query:
+-- SELECT name, COUNT(DISTINCT customer_id) AS number_of_purchases
+-- FROM Product
+-- NATURAL JOIN Purchase
+-- WHERE category = 'Books'
+-- GROUP BY name;
+
+
+-- Explanation of Set Operations with Example Tables
+
+-- Set-union:
+-- The UNION operator combines the results of two SELECT statements and returns all unique rows from both queries.
+-- Example:
+-- Suppose we have the following data in two tables:
+
+-- Table A:
+-- | value |
+-- |-------|
+-- | 1     |
+-- | 2     |
+
+-- Table B:
+-- | value |
+-- |-------|
+-- | 2     |
+-- | 3     |
+
+-- The query:
+SELECT value FROM TableA
+UNION
+SELECT value FROM TableB;
+
+-- Explanation:
+-- 1. The UNION operator combines the results of the two SELECT statements.
+-- 2. It returns all unique rows from both TableA and TableB.
+
+-- Result of the query:
+-- | value |
+-- |-------|
+-- | 1     |
+-- | 2     |
+-- | 3     |
+
+-- Set-intersection:
+-- The INTERSECT operator returns only the rows that are present in both SELECT statements.
+-- Example:
+-- Suppose we have the following data in two tables:
+
+-- Table A:
+-- | value |
+-- |-------|
+-- | 1     |
+-- | 2     |
+
+-- Table B:
+-- | value |
+-- |-------|
+-- | 2     |
+-- | 3     |
+
+-- The query:
+SELECT value FROM TableA
+INTERSECT
+SELECT value FROM TableB;
+
+-- Explanation:
+-- 1. The INTERSECT operator returns only the rows that are present in both TableA and TableB.
+
+-- Result of the query:
+-- | value |
+-- |-------|
+-- | 2     |
+
+-- Set-difference:
+-- The EXCEPT operator returns the rows from the first SELECT statement that are not present in the second SELECT statement.
+-- Example:
+-- Suppose we have the following data in two tables:
+
+-- Table A:
+-- | value |
+-- |-------|
+-- | 1     |
+-- | 2     |
+
+-- Table B:
+-- | value |
+-- |-------|
+-- | 2     |
+-- | 3     |
+
+-- The query:
+SELECT value FROM TableA
+EXCEPT
+SELECT value FROM TableB;
+
+-- Explanation:
+-- 1. The EXCEPT operator returns the rows from TableA that are not present in TableB.
+
+-- Result of the query:
+-- | value |
+-- |-------|
+-- | 1     |
+
+
+
+-- This query finds the v_ids and dist_nums of voters who voted for all the candidates
+-- that the voter with v_id = 123 voted for.
+
+SELECT v_id, dist_num
+FROM Voter AS T
+WHERE NOT EXISTS (
+    -- Subquery to find candidates voted by voter with v_id = 123
+    (SELECT DISTINCT candidate
+     FROM VotesCast
+     WHERE v_id = 123)
+    -- EXCEPT operator to find candidates not voted by current voter
+    EXCEPT
+    (SELECT DISTINCT candidate
+     FROM VotesCast AS S
+     WHERE S.v_id = T.v_id)
+);
+
+-- Explanation:
+-- 1. The outer query selects v_id and dist_num from the Voter table.
+-- 2. The NOT EXISTS clause ensures that the current voter (T.v_id) has voted for all candidates
+--    that the voter with v_id = 123 has voted for.
+-- 3. The first subquery selects distinct candidates voted by the voter with v_id = 123.
+-- 4. The second subquery selects distinct candidates voted by the current voter (T.v_id).
+-- 5. The EXCEPT operator finds candidates that are in the first subquery but not in the second.
+--    It returns the set difference between the two subqueries.
+-- 6. If the EXCEPT result is empty, it means the current voter voted for all candidates
+--    that v_id = 123 voted for, satisfying the NOT EXISTS condition.
+
+-- Example:
+-- Suppose we have the following data in the VotesCast table:
+-- | v_id | candidate |
+-- |------|-----------|
+-- | 123  | A         |
+-- | 123  | B         |
+-- | 124  | A         |
+-- | 124  | B         |
+-- | 125  | A         |
+-- | 125  | C         |
+
+-- For voter with v_id = 123, the candidates voted are A and B.
+-- For voter with v_id = 124, the candidates voted are A and B.
+-- For voter with v_id = 125, the candidates voted are A and C.
+
+-- The first subquery:
+-- SELECT DISTINCT candidate
+-- FROM VotesCast
+-- WHERE v_id = 123;
+-- Result: {A, B}
+
+-- The second subquery for voter with v_id = 124:
+-- SELECT DISTINCT candidate
+-- FROM VotesCast AS S
+-- WHERE S.v_id = T.v_id;
+-- Explanation using table:
+-- Suppose we have the following data in the VotesCast table:
+-- | v_id | candidate |
+-- |------|-----------|
+-- | 123  | A         |
+-- | 123  | B         |
+-- | 124  | A         |
+-- | 124  | B         |
+-- | 125  | A         |
+-- | 125  | C         |
+-- 
+-- For voter with v_id = 123, the candidates voted are A and B.
+-- For voter with v_id = 124, the candidates voted are A and B.
+-- For voter with v_id = 125, the candidates voted are A and C.
+-- 
+-- The first subquery:
+-- SELECT DISTINCT candidate
+-- FROM VotesCast
+-- WHERE v_id = 123;
+-- Result: {A, B}
+-- 
+-- The second subquery for voter with v_id = 124:
+-- SELECT DISTINCT candidate
+-- FROM VotesCast AS S
+-- WHERE S.v_id = T.v_id;
+-- Result: {A, B}
+-- 
+-- The EXCEPT operator:
+-- {A, B} EXCEPT {A, B}
+-- Result: {}
+-- 
+-- Since the EXCEPT result is empty, the NOT EXISTS condition is satisfied for voter with v_id = 124.
+-- 
+-- The second subquery for voter with v_id = 125:
+-- SELECT DISTINCT candidate
+-- FROM VotesCast AS S
+-- WHERE S.v_id = T.v_id;
+-- Result: {A, C}
+-- 
+-- The EXCEPT operator:
+-- {A, B} EXCEPT {A, C}
+-- Result: {B}
+-- 
+-- Since the EXCEPT result is not empty, the NOT EXISTS condition is not satisfied for voter with v_id = 125.
+-- Result: {A, B}
+
+-- The EXCEPT operator:
+-- {A, B} EXCEPT {A, B}
+-- Result: {}
+
+-- Since the EXCEPT result is empty, the NOT EXISTS condition is satisfied for voter with v_id = 124.
+
+
+
+
+
+-- The second subquery for voter with v_id = 125:
+-- SELECT DISTINCT candidate
+-- FROM VotesCast AS S
+-- WHERE S.v_id = T.v_id;
+-- Result: {A, C}
+
+-- The EXCEPT operator:
+-- {A, B} EXCEPT {A, C}
+-- Result: {B}
+
+-- Since the EXCEPT result is not empty, the NOT EXISTS condition is not satisfied for voter with v_id = 125.
+
+-- Therefore, the query will return the v_id and dist_num for voters who voted for all candidates that voter with v_id = 123 voted for, which in this example is only voter with v_id = 124.
+
+
+
+
+
+
+-- Create a view to count the number of votes each candidate received
+CREATE VIEW candidate_vote_count AS
+SELECT candidate, COUNT(DISTINCT v_id) AS number_of_votes  -- Count unique voter IDs for each candidate
+FROM Voter
+NATURAL JOIN VotesCast  -- Join Voter and VotesCast tables on v_id
+NATURAL JOIN Office     -- Join the result with Office table on o_id
+WHERE title = 'President'  -- Filter for the title 'President'
+AND locality = 'US'        -- Filter for the locality 'US'
+AND dist_num = 456         -- Filter for the specific election district number 456
+GROUP BY candidate;        -- Group the results by candidate to count votes per candidate
+
+-- Example Tables:
+-- Voter table:
+-- | v_id | name       |
+-- |------|------------|
+-- | 1    | John Smith |
+-- | 2    | Jane Doe   |
+-- | 3    | Alice Brown|
+
+-- VotesCast table:
+-- | v_id | o_id | candidate |
+-- |------|------|-----------|
+-- | 1    | 101  | A         |
+-- | 2    | 101  | B         |
+-- | 3    | 101  | A         |
+-- | 1    | 102  | B         |
+-- | 2    | 102  | A         |
+
+-- Office table:
+-- | o_id | title     | locality | dist_num |
+-- |------|-----------|----------|----------|
+-- | 101  | President | US       | 456      |
+-- | 102  | President | US       | 456      |
+-- | 103  | Senator   | US       | 789      |
+
+-- Explanation:
+-- 1. The NATURAL JOIN between Voter and VotesCast tables will join rows based on the common attribute 'v_id'.
+-- 2. The result is then NATURAL JOINed with the Office table based on the common attribute 'o_id'.
+-- 3. The WHERE clause filters the rows to include only those with title 'President', locality 'US', and dist_num 456.
+-- 4. The GROUP BY clause groups the rows by 'candidate' and the COUNT(DISTINCT v_id) function counts the unique voter IDs for each candidate.
+
+-- Result of the view candidate_vote_count:
+-- | candidate | number_of_votes |
+-- |-----------|-----------------|
+-- | A         | 2               |
+-- | B         | 2               |
+
+-- Select the candidate with the maximum number of votes
+SELECT candidate
+FROM candidate_vote_count
+WHERE number_of_votes = (SELECT MAX(number_of_votes) FROM candidate_vote_count);  -- Find the candidate with the highest vote count
+
+-- Explanation:
+-- 1. The subquery (SELECT MAX(number_of_votes) FROM candidate_vote_count) finds the maximum number of votes any candidate received.
+-- 2. The outer query selects the candidate(s) whose number_of_votes matches the maximum number of votes.
+
+-- Result of the query:
+-- | candidate |
+-- |-----------|
+-- | A         |
+-- | B         |
+
+
